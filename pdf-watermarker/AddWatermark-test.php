@@ -1,4 +1,3 @@
-
 <?php
 //包含依赖库
 // set_include_path(dirname(__FILE__) . '/');
@@ -105,13 +104,12 @@ for ($i=1; $i < $args; $i++) {
 		$pdfFile = $argv[$i];
 	}
 }
-echo ini_get('display_errors');
+// echo ini_get('display_errors');
 
 if ($pdfFile == NULL) {
 	usage();
 }
 else{
-	print_r($textColor);
 	$bbox = imagettfbbox($fontSize,0,'fonts/' . $font . '.ttf',$text);
 	$width = $bbox[2] - $bbox[0];
 	$height = $bbox[1] - $bbox[7];
