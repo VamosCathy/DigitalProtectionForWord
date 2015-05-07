@@ -15,3 +15,5 @@ vendor/
 *.ttf
 *.png
 *.jpg
+*.doc
+*.docx
