@@ -13,3 +13,7 @@ vendor/
 *.pdf
 *.class
 *.ttf
+*.png
+*.jpg
+*.doc
+*.docx
