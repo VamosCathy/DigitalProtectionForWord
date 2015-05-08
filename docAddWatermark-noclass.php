@@ -1,9 +1,5 @@
 <?php
 //包含依赖库
-<<<<<<< HEAD
-=======
-//require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
->>>>>>> cd40c991ba8eb860f9ca5fd5dc304d0edb96f38a
 require 'pdf-watermarker/fpdf_alpha.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
