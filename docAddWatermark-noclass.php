@@ -85,7 +85,8 @@ function png2pdf($pngpath,$pageNum,$outputDirPath,$pureName){
 	for ($i=0; $i < $pageNum; $i++) { 
 		$image = $pngpath . $pureName . '-' . $i . '.png';
 		$newPdf->AddPage();
-		$newPdf->Image($image,20,40,600,1000);
+		$newPdf->ImagePngWithAlpha($image,20,40,600,0);
+		$newPdf->Image($image,20,40,600,0,'PNG');
 	}
 	$newPdfPath = $outputDirPath . '/new-' . $purename . '.pdf';
 	$newPdf->Output($newPdfPath);
