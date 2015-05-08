@@ -7,4 +7,5 @@ function convertDocToPdf($originFilePath,$outputDirPath){
 
 	return $output;
 }
+convertDocToPdf('笔记.doc','../');
 ?>
