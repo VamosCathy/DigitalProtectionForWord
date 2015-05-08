@@ -4,6 +4,7 @@ require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
+require 'pdf-watermarker/fpdf_alpha.php';
 
 //convert word to pdf
 function convertDocToPdf($originFilePath,$outputDirPath){
@@ -94,7 +95,7 @@ function png2pdf($pngpath,$pageNum,$outputDirPath,$pureName){
 //product watermark
 function productWatermark($text){
 	$fontSize = 40;
-	$bbox = imagettfbbox($40,0,'fonts/simhei.ttf',$text);
+	$bbox = imagettfbbox(40,0,'fonts/simhei.ttf',$text);
 	$width = $bbox[2] - $bbox[0];
 	$height = $bbox[1] - $bbox[7];
 
@@ -134,7 +135,7 @@ $originPath = $originPathArray[0];
 
 convertDocToPdf($wordPath,$originPath);
 $pdfPath = $originPath . '/' . $wordName . '.pdf';
-$pngpath = $originPath . '/images';
+$pngpath = $originPath . 'images/';
 pdf2png($pdfPath,$pngpath);
 
 $pageNum = getPageTotal($pdfPath);
