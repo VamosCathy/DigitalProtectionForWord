@@ -1,10 +1,10 @@
 <?php
 //包含依赖库
-require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
+//require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
+require 'pdf-watermarker/fpdf_alpha.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
-require 'pdf-watermarker/fpdf_alpha.php';
 
 //convert word to pdf
 function convertDocToPdf($originFilePath,$outputDirPath){
@@ -85,7 +85,6 @@ function png2pdf($pngpath,$pageNum,$outputDirPath,$pureName){
 	for ($i=0; $i < $pageNum; $i++) { 
 		$image = $pngpath . $pureName . '-' . $i . '.png';
 		$newPdf->AddPage();
-		$newPdf->ImagePngWithAlpha($image,20,40,600,0);
 		$newPdf->Image($image,20,40,600,0,'PNG');
 	}
 	$newPdfPath = $outputDirPath . '/new-' . $purename . '.pdf';
