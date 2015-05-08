@@ -1,6 +1,6 @@
 <?php
 //包含依赖库
-// require 'pdf-watermarker/fpdf_alpha.php';
+require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
@@ -93,10 +93,10 @@ function pdf2png($pdfpath,$pngpath){
 
 function png2pdf($pngpath,$pureName,$outputDirPath){
 	$command = 'convert %s %s';
-	$command = sprintf($command,$pngpath . '/*.png',$outputDirPath . '/output.pdf');
+	$command = sprintf($command,$pngpath . '*.png',$outputDirPath . 'output.pdf');
 	system($command,$output);
 
-	return $outputDirPath;
+	return $outputDirPath . 'output.pdf';
 }
 
 //product watermark
@@ -150,12 +150,12 @@ pdf2png($pdfPath,$pngpath);
 $pageNum = getPageTotal($pdfPath);
 $pageNum = (int)$pageNum;
 // $pdfPath = png2pdf($pngpath,$pageNum,$originPath,$wordName);
-$pdfPath = png2pdf($pngpath,$wordName,$originPath);
+$pdfFile = png2pdf($pngpath,$wordName,$originPath);
 $watermarkPath = productWatermark($text);
 
 //add watermark
 $watermark = new PDFWatermark($watermarkPath);
 $watermark->setPosition($isSingle);
-$finalPdf = new PDFWatermarker($pdfPath,'output_' . $pdfFile,$watermark);
+$finalPdf = new PDFWatermarker($pdfFile,$originPath . 'output_' . $wordName . '.pdf',$watermark);
 $finalPdf->savePdf();
 ?>
