@@ -1,4 +1,5 @@
 <?php
+require('vendor/binarystash/fpdf/fpdf.php');
 /*******************************************************************************
 * Software: PDF_ImageAlpha
 * Version:  1.3

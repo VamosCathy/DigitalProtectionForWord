@@ -1,10 +1,9 @@
 <?php
 //包含依赖库
-require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
+require 'pdf-watermarker/fpdf_alpha.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
-require 'pdf-watermarker/fpdf_alpha.php';
 
 //convert word to pdf
 function convertDocToPdf($originFilePath,$outputDirPath){
@@ -134,16 +133,19 @@ $wordName = explodeFilename($wordPath,'.doc');
 $originPathArray = explode($wordName,$wordPath);
 $originPath = $originPathArray[0];
 
+//convert word to pdf,saved it in images document
 convertDocToPdf($wordPath,$originPath);
 $pdfPath = $originPath . '/' . $wordName . '.pdf';
 $pngpath = $originPath . 'images/';
 pdf2png($pdfPath,$pngpath);
 
+//add images together to pdf
 $pageNum = getPageTotal($pdfPath);
 $pageNum = (int)$pageNum;
 $pdfPath = png2pdf($pngpath,$pageNum,$originPath,$wordName);
 $watermarkPath = productWatermark($text);
 
+//add watermark
 $watermark = new PDFWatermark($watermarkPath);
 $watermark->setPosition($isSingle);
 $finalPdf = new PDFWatermarker($pdfPath,'output_' . $pdfFile,$watermark);
