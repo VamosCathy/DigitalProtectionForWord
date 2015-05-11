@@ -1,6 +1,5 @@
 <?php
 //包含依赖库
-// require 'pdf-watermarker/fpdf_alpha.php';
 require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
@@ -158,6 +157,6 @@ $watermarkPath = productWatermark($text);
 //add watermark
 $watermark = new PDFWatermark($watermarkPath);
 $watermark->setPosition($isSingle);
-$finalPdf = new PDFWatermarker($pdfFile,'output_' . $wordName,$watermark);
+$finalPdf = new PDFWatermarker($pdfFile,$originPath . 'output_' . $wordName . '.pdf',$watermark);
 $finalPdf->savePdf();
 ?>
