@@ -1,10 +1,6 @@
 <?php
 //包含依赖库
-<<<<<<< HEAD
-=======
-//require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
->>>>>>> cd40c991ba8eb860f9ca5fd5dc304d0edb96f38a
-require 'pdf-watermarker/fpdf_alpha.php';
+require 'pdf-watermarker/vendor/binarystash/fpdf/fpdf.php';
 require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
@@ -83,16 +79,24 @@ function pdf2png($pdfpath,$pngpath){
 }
 
 //merge png to pdf
-function png2pdf($pngpath,$pageNum,$outputDirPath,$pureName){
-	$newPdf = new FPDF();
-	for ($i=0; $i < $pageNum; $i++) { 
-		$image = $pngpath . $pureName . '-' . $i . '.png';
-		$newPdf->AddPage();
-		$newPdf->Image($image,20,40,600,0,'PNG');
-	}
-	$newPdfPath = $outputDirPath . '/new-' . $purename . '.pdf';
-	$newPdf->Output($newPdfPath);
-	return $newPdfPath;
+// function png2pdf($pngpath,$pageNum,$outputDirPath,$pureName){
+// 	$newPdf = new FPDF();
+// 	for ($i=0; $i < $pageNum; $i++) { 
+// 		$image = $pngpath . $pureName . '-' . $i . '.png';
+// 		$newPdf->AddPage();
+// 		$newPdf->Image($image,20,40,600,0,'PNG');
+// 	}
+// 	$newPdfPath = $outputDirPath . '/new-' . $purename . '.pdf';
+// 	$newPdf->Output($newPdfPath);
+// 	return $newPdfPath;
+// }
+
+function png2pdf($pngpath,$pureName,$outputDirPath){
+	$command = 'convert %s %s';
+	$command = sprintf($command,$pngpath . '*.png',$outputDirPath . 'output.pdf');
+	system($command,$output);
+
+	return $outputDirPath . 'output.pdf';
 }
 
 //product watermark
@@ -127,14 +131,15 @@ function productWatermark($text){
 	return $path;
 }
 
-$wordPath = $argv[1];
-$text = $argv[2];
-$isSingle = $argv[3];
+$wordPath = $argv[1];//原始doc文件所在位置，例如“../1.doc”
+$text = $argv[2];//加入的水印字
+$isSingle = $argv[3]; //水印是否为单个
 
 //acquire path of word
-$wordName = explodeFilename($wordPath,'.doc');
+$wordName = explodeFilename($wordPath,'.doc');//去掉doc文件路径中的后缀和路径，获得纯文件名
+
 $originPathArray = explode($wordName,$wordPath);
-$originPath = $originPathArray[0];
+$originPath = $originPathArray[0]; //获得原始doc文件路径，例如"../"
 
 //convert word to pdf,saved it in images document
 convertDocToPdf($wordPath,$originPath);
@@ -145,12 +150,13 @@ pdf2png($pdfPath,$pngpath);
 //add images together to pdf
 $pageNum = getPageTotal($pdfPath);
 $pageNum = (int)$pageNum;
-$pdfPath = png2pdf($pngpath,$pageNum,$originPath,$wordName);
+// $pdfPath = png2pdf($pngpath,$pageNum,$originPath,$wordName);
+$pdfFile = png2pdf($pngpath,$wordName,$originPath);
 $watermarkPath = productWatermark($text);
 
 //add watermark
 $watermark = new PDFWatermark($watermarkPath);
 $watermark->setPosition($isSingle);
-$finalPdf = new PDFWatermarker($pdfPath,'output_' . $pdfFile,$watermark);
+$finalPdf = new PDFWatermarker($pdfFile,$originPath . 'output_' . $wordName . '.pdf',$watermark);
 $finalPdf->savePdf();
 ?>
