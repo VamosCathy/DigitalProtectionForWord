@@ -5,8 +5,12 @@ require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
 
-//convert word to pdf
-function convertDocToPdf($originFilePath,$outputDirPath){
+//convert word to pdf,返回写入的全路径
+function convertDocToPdf($originFilePath){
+	$outputDirPath = './' . uniqid();
+	if(!mkdir($outputDirPath,0700,true)){
+		die("failed to create folders...");
+	}
 	$command = 'unoconv --format %s --output %s %s';
 	$command = sprintf($command,'pdf',$outputDirPath,$originFilePath);
 	system($command,$output);
