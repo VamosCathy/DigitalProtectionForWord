@@ -5,17 +5,21 @@ require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
 
+
 //convert word to pdf,返回写入的全路径
 function convertDocToPdf($originFilePath){
-	$outputDirPath = './' . uniqid();
-	if(!mkdir($outputDirPath,0700,true)){
-		die("failed to create folders...");
-	}
+	$function1_starttime = microtime(true);
 	$command = 'unoconv --format %s --output %s %s';
-	$command = sprintf($command,'pdf',$outputDirPath,$originFilePath);
-	system($command,$output);
-
-	return $output;
+	$outputFileName = uniqid() . ".pdf";
+	$command = sprintf($command,'pdf',dirname(__file__) . "/upload/" . $outputFileName,$originFilePath);
+	// echo $command;
+	putenv('PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/cathy/bin');
+	// system('touch ' . dirname(__file__) . "/upload/" . $outputFileName);
+	system($command . "&> /var/www/html/log.txt",$output);
+	$function1_endtime = microtime(true);
+	$function1_runtime = $function1_endtime - $function1_starttime;
+	echo "convertDocToPdf run time = " . $function1_runtime . "<br />";	
+	return $outputFileName;
 }
 
 //get pdf total pages
@@ -41,7 +45,7 @@ function getPageTotal($pdfpath){
 //single pdf page to png
 function pdfpage2png($pdfpath,$pngpath,$page=0){
 	if (!is_dir($pngpath)) {
-		mkdir($pngpath,0700,true);
+		mkdir($pngpath,0755,true);
 	}
 	if (!extension_loaded('imagick')) {
 		echo 'cannot find imagick';
@@ -55,31 +59,26 @@ function pdfpage2png($pdfpath,$pngpath,$page=0){
 	$im->setResolution(200,200);
 	$im->setCompressionQuality(80);
 	$im->readImage($pdfpath . "[" . $page . "]");
-	$im->scaleImage(648,1024,true);
-	$filename = $pngpath . "/" . explodeFilename($pdfpath,".pdf") . "-" . $page . ".png";
+	// $im->scaleImage(1000,1024,true);
+	// echo $pngpath;
+	$filename = $pngpath . "/" . basename($pdfpath,".pdf") . "-" . $page . ".png";
 	if ($im->writeImage($filename) == true) {
 		$Return = $filename;
 	}
 	return $Return;
 }
 
-//explode file name with path and format
-function explodeFilename($filepath,$format){
-	$tmpArray = explode('/',$filepath);
-	$tmpNum = count($tmpArray);
-	$tmpName = $tmpArray[$tmpNum - 1];
-	$nameArray = explode($format,$tmpName);
-	$pureName = $nameArray[0];
-	return $pureName;
-}
-
 //pdf file to png
 function pdf2png($pdfpath,$pngpath){
+	$function2_starttime = microtime(true);
 	$pageNum = getPageTotal($pdfpath);
 	$pageNum = (int)$pageNum;
 	for ($i=0; $i < $pageNum; $i++) { 
-		pdfpage2png($pdfpath,$pngpath,$i);
+		$result = pdfpage2png($pdfpath,$pngpath,$i);
 	}
+	$function2_endtime = microtime(true);
+	$function2_runtime = $function2_endtime - $function2_starttime;
+	echo "pdf2png run time =" . $function2_runtime . "<br />";
 }
 
 //merge png to pdf
@@ -96,15 +95,20 @@ function pdf2png($pdfpath,$pngpath){
 // }
 
 function png2pdf($pngpath,$pureName,$outputDirPath){
+	$function3_starttime = microtime(true);
 	$command = 'convert %s %s';
-	$command = sprintf($command,$pngpath . '*.png',$outputDirPath . 'output.pdf');
+	$command = sprintf($command,$pngpath . '/*.png',$outputDirPath . 'output.pdf');
+	// echo $command;
 	system($command,$output);
-
+	$function3_endtime = microtime(true);
+	$function3_runtime = $function3_endtime - $function3_starttime;
+	echo "png2pdf" . $function3_runtime . "<br />";
 	return $outputDirPath . 'output.pdf';
 }
 
 //product watermark
 function productWatermark($text){
+	$function4_starttime = microtime(true);
 	$fontSize = 40;
 	$bbox = imagettfbbox(40,0,'fonts/simhei.ttf',$text);
 	$width = $bbox[2] - $bbox[0];
@@ -132,35 +136,63 @@ function productWatermark($text){
 	$path = sys_get_temp_dir() . '/' . uniqid() . '.png';
 	imagepng($im,$path);
 	imagedestroy($im);
+	$function4_endtime = microtime(true);
+	$function4_runtime = $function4_endtime - $function4_starttime;
+	echo "productWatermark run time =" . $function4_runtime . "<br />";
 	return $path;
 }
 
-$wordPath = $argv[1];//原始doc文件所在位置，例如“../1.doc”
-$text = $argv[2];//加入的水印字
-$isSingle = $argv[3]; //水印是否为单个
+if($_FILES["file"]["error"] > 0){
+	echo "Return Code: " . $_FILES["file"]["error"] . "<br />";
+}
+else{
+	// var_dump($_FILES["file"]);
+	if(file_exists($_FILES["file"]["name"])){
+		echo $_FILES["file"]["name"] . "already exists.";
+	}
+	else{
+		// echo "ok";
+		$path_part = pathinfo($_FILES["file"]["name"],PATHINFO_EXTENSION);
+		$wordPath = dirname(__file__) . "/upload/" . uniqid() . '.' . $path_part;
+		// echo $wordPath;
+		$result = move_uploaded_file($_FILES["file"]["tmp_name"],$wordPath);
+		// chmod($wordPath,0766);
+	}
+}
 
-//acquire path of word
-$wordName = explodeFilename($wordPath,'.doc');//去掉doc文件路径中的后缀和路径，获得纯文件名
+$input = $_POST;
+$text = $input['watermark'];//加入的水印字
+// $isSingle = $input['issingle']; //水印是否为单个
+$isSingle = true;
 
-$originPathArray = explode($wordName,$wordPath);
-$originPath = $originPathArray[0]; //获得原始doc文件路径，例如"../"
+$pureName = basename($wordPath,$path_part);
 
 //convert word to pdf,saved it in images document
-convertDocToPdf($wordPath,$originPath);
-$pdfPath = $originPath . '/' . $wordName . '.pdf';
-$pngpath = $originPath . 'images/';
-pdf2png($pdfPath,$pngpath);
+$pdfName = convertDocToPdf($wordPath);
+// $pdfName = "5554a05d2ff85.pdf";
+$pdfPath = dirname(__file__) . "/upload/" . $pdfName;
+$pngPath = dirname(__file__) . "/upload/images-" . uniqid();
+pdf2png($pdfPath,$pngPath);
 
 //add images together to pdf
 $pageNum = getPageTotal($pdfPath);
 $pageNum = (int)$pageNum;
-// $pdfPath = png2pdf($pngpath,$pageNum,$originPath,$wordName);
-$pdfFile = png2pdf($pngpath,$wordName,$originPath);
+// echo $pngPath;
+$pdfFile = png2pdf($pngPath,$pureName,dirname(__file__) . "/upload/");
 $watermarkPath = productWatermark($text);
+// echo $pdfFile;
 
 //add watermark
+$function5_starttime = microtime(true);
 $watermark = new PDFWatermark($watermarkPath);
 $watermark->setPosition($isSingle);
-$finalPdf = new PDFWatermarker($pdfFile,$originPath . 'output_' . $wordName . '.pdf',$watermark);
+$finalPath = dirname(__file__) . "/upload/final-" . uniqid() . '.pdf';
+$finalPdf = new PDFWatermarker($pdfFile,$finalPath,$watermark);
 $finalPdf->savePdf();
+$function5_endtime = microtime(true);
+$function5_runtime = $function5_endtime - $function5_starttime;
+echo "add watermark run time = " . $function5_runtime;
+$finalurl = 'http://192.168.1.188/upload/' . basename($finalPath);
+// require_once __DIR__ . '/output.html';
+echo '<a href="' . $finalurl . '">download</a>';
 ?>
