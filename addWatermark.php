@@ -6,7 +6,6 @@ require 'pdf-watermarker/vendor/setasign/fpdi/fpdi.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermarker.php';
 require 'pdf-watermarker/pdfwatermarker/pdfwatermark.php';
 
-//product watermark
 function productWatermark($text){
 	$function4_starttime = microtime(true);
 	$fontSize = 40;
@@ -43,9 +42,32 @@ function productWatermark($text){
 }
 
 $isSingle = true;
-$text = $argv[1]; //需要插入的文字水印
-$originFile = $argv[2]; //input pdf file
-$outputFile = $argv[3]; //output pdf file
+$text = "Copyright@www.shangke.com"; //设置默认水印文字
+$originFile = ''; //input pdf file
+$outputFile = ''; //output pdf file
+
+$i = 0;
+$flag = 0; //输入参数是否正确地标志
+
+while($i < $argc){
+    if($argv[$i] == '--text'){
+        $text = $argv[++$i]; //需要输入的文字水印
+    }
+    else if($argv[$i] == '--input'){
+        $originFile = $argv[++$i]; //input pdf file
+        $flag++;
+    }
+    else if($argv[$i] == '--output'){
+        $outputFile = $argv[++$i]; //output pdf file
+        $flag++;
+    }
+    else
+        ++$i;
+}
+
+if($flag != 2){
+    exit("用法错误。命令格式：php addWatermark.php --text 水印文字 --input 源pdf文件路径 --output 输出pdf文件路径");
+}
 
 $originFileDir = pathinfo($originFile,PATHINFO_DIRNAME);
 $outputFileDir = pathinfo($outputFile,PATHINFO_DIRNAME);
@@ -59,3 +81,4 @@ $watermark->setPosition($isSingle);
 $finalPdf = new PDFWatermarker($originFile, $outputFile,$watermark);
 $finalPdf->savePdf();
 echo "finalPdfPath = " . $outputFile . PHP_EOL;
+?>
