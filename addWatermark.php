@@ -45,14 +45,17 @@ function productWatermark($text){
 $isSingle = true;
 $text = $argv[1]; //需要插入的文字水印
 $originFile = $argv[2]; //input pdf file
+$outputFile = $argv[3]; //output pdf file
+
 $originFileDir = pathinfo($originFile,PATHINFO_DIRNAME);
+$outputFileDir = pathinfo($outputFile,PATHINFO_DIRNAME);
 
 $watermarkPath = productWatermark($text);
 
 //add watermark
 $watermark = new PDFWatermark($watermarkPath);
 $watermark->setPosition($isSingle);
-$finalPdfPath = $originFileDir . "/" . uniqid() . ".pdf";
-$finalPdf = new PDFWatermarker($originFile, $finalPdfPath,$watermark);
+// $finalPdfPath = $originFileDir . "/" . uniqid() . ".pdf";
+$finalPdf = new PDFWatermarker($originFile, $outputFile,$watermark);
 $finalPdf->savePdf();
-echo "finalPdfPath = " . $finalPdfPath . PHP_EOL;
+echo "finalPdfPath = " . $outputFile . PHP_EOL;

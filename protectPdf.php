@@ -1,9 +1,12 @@
 <?php
+// 所有中间文件都暂时保存在doc文件夹下
+// 生成最终pdf后将中间文件删除
+// 最终pdf放到指定文件夹下
 
 //convert word to pdf,返回写入的全路径
 function convertDocToPdf($originFile){
 	// echo "originFile = " . $originFile;
-	$function1_starttime = microtime(true);
+	// $function1_starttime = microtime(true);
     	//获得文件所在位置
     	$originFilePath = pathinfo($originFile,PATHINFO_DIRNAME);
 	$outputFileName = uniqid() . ".pdf";
@@ -12,8 +15,8 @@ function convertDocToPdf($originFile){
 	// echo "command = " . $command . PHP_EOL;
 	putenv('PATH=/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/cathy/bin');
 	system($command . "&> " . dirname(__file__) . "/log.txt",$output);
-	$function1_endtime = microtime(true);
-	$function1_runtime = $function1_endtime - $function1_starttime;
+	// $function1_endtime = microtime(true);
+	// $function1_runtime = $function1_endtime - $function1_starttime;
 	// echo "convertDocToPdf run time = " . $function1_runtime . "<br />";	
 	return $originFilePath . '/' . $outputFileName;
 }
@@ -82,18 +85,19 @@ function pdf2png($pdfpath,$pngpath){
 }
 
 //merge png to pdf
-function png2pdf($pngpath,$outputDirPath){
-	$function3_starttime = microtime(true);
+function png2pdf($pngpath,$outputFile){
+	// $function3_starttime = microtime(true);
 	$command = 'convert %s %s';
-    $pdfName = uniqid() . ".pdf";
-	$command = sprintf($command,$pngpath . '/*.png',$outputDirPath . '/' . $pdfName);
+	$outputPath = pathinfo($outputFile,PATHINFO_EXTENSION);
+	// $pdfName = uniqid() . ".pdf";
+	$command = sprintf($command,$pngpath . '/*.png',$outputFile);
 	// echo "png2pdf-command = " . $command;
 	// echo $command;
 	system($command,$output);
-	$function3_endtime = microtime(true);
-	$function3_runtime = $function3_endtime - $function3_starttime;
+	// $function3_endtime = microtime(true);
+	// $function3_runtime = $function3_endtime - $function3_starttime;
 	// echo "png2pdf" . $function3_runtime . "<br />";
-	return $outputDirPath . '/' . $pdfName;
+	return $outputFile;
 }
 
 function deldir($dir){
@@ -121,8 +125,11 @@ function deldir($dir){
 
 //传入参数：doc文件路径
 $docFile = $argv[1];
+$outputFile = $argv[2]; //output PDF file
+
 $docPath = pathinfo($docFile,PATHINFO_DIRNAME);
 $docExt = pathinfo($docFile,PATHINFO_EXTENSION);
+// $outputPath = pathinfo($outputFile,PATHINFO_DIRNAME);
 
 //convert word to pdf,saved it in images document
 $originPdfFile = convertDocToPdf($docFile); //返回可复制pdf的全路径
@@ -133,7 +140,7 @@ pdf2png($originPdfFile,$pngPath);
 $pageNum = getPageTotal($originPdfFile);
 $pageNum = (int)$pageNum;
 // echo $pngPath;
-$finalPdfFile = png2pdf($pngPath,$docPath);
+$finalPdfFile = png2pdf($pngPath,$outputFile);
 echo "finalPdfFile = " . $finalPdfFile;
 //垃圾清理
 unlink($originPdfFile);
